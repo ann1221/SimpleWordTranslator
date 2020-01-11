@@ -1,0 +1,3 @@
+*.lnk
+*.json
+__pycache__/
