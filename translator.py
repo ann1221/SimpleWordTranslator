@@ -51,8 +51,8 @@ class Application(Frame):
     def PlaceBasicVidgs(self):
         self.pad.place(x=0, y=0, relwidth=1, relheight=1)
         self.middleFrame.place(relx=0,rely=0.3,relwidth=1, relheight=0.4)
-        self.btnTranslate.place(relx=0.0, rely=0.6, relwidth=0.9, relheight=0.4)
-        self.btnHow.place(relx=0.902, rely=0.6, relwidth=0.1, relheight=0.4)
+        self.btnTranslate.place(relx=0.0, rely=0.6, relwidth=0.93, relheight=0.4)
+        self.btnHow.place(relx=0.931, rely=0.6, relwidth=0.07, relheight=0.4)
         self.entryInp.place(x = 10, rely = 0.1, relwidth = 0.47, height = 25)
         self.entryOutp.place(relx = 0.5, rely = 0.1, relwidth = 0.48, height = 25)
         
