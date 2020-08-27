@@ -1,2 +1,2 @@
 # YandexTranslate
-work with Yandex.Translator API by token
+work with Yandex API by token.
