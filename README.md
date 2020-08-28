@@ -1,2 +1,2 @@
 # YandexTranslate
-work with Yandex API by token.
+This app work with googletrans library
