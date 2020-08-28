@@ -1,3 +1,5 @@
 *.lnk
 *.json
 __pycache__/
+config/dublicateConfig.*
+*.pyw

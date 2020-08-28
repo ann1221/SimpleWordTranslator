@@ -17,6 +17,7 @@ class Application(Frame):
         self.translator = googleTransCore.Google_Translator()
         self.isAppCanChangeLocation = False
         self.isExpandedMore = False
+        self.isTrackHistory = BooleanVar()
 
         self.createBasicVidgs()
         self.placeBasicVidgs()
@@ -25,7 +26,7 @@ class Application(Frame):
 
     def createBasicVidgs(self):
         styles = CONFIG['styles']
-        infoText = CONFIG['infoUI']
+        infoText = CONFIG['infoUI']['labels']
         
         self.pad = Canvas(root)
         self.bgImage = ImageTk.PhotoImage(Image.open(CONFIG['paths']['bgImg']))
@@ -45,14 +46,14 @@ class Application(Frame):
                             fg = styles['primaryFg'],
                             font = styles["font"])
         self.btnTranslate = Button(self.middleFrame, 
-                            text = infoText['button']['translate'],
+                            text = infoText['translate'],
                             bg = styles['secondaryBg'], 
                             fg = styles['secondaryFg'], 
                             activebackground = styles['additionalBg'], 
                             relief = GROOVE,
                             command = lambda: self._onBtnTranslatePress())
         self.btnHow = Button(self.middleFrame, 
-                            text = infoText['button']['what'],
+                            text = infoText['what'],
                             bg = styles['secondaryBg'], 
                             fg = styles['secondaryFg'],
                             activebackground = styles['additionalBg'], 
@@ -61,7 +62,7 @@ class Application(Frame):
         self.scrollbar = Scrollbar(self.pad, 
                             orient = VERTICAL)
         self.langLabel = Label(self.pad,
-                            text=infoText['labels']['chooseLang'],
+                            text=infoText['chooseLang'],
                             bg = styles['secondaryFg'], 
                             fg = styles['primaryFg'],
                             borderwidth=1, 
@@ -75,11 +76,23 @@ class Application(Frame):
                             fg = styles['secondaryFg'], 
                             selectbackground = styles['additionalBg'], 
                             selectforeground = styles['primaryFg'],
-                            font = styles["font"], 
+                            font = styles['font'], 
                             highlightcolor = styles['primaryFg'],
                             relief = RIDGE,
                             highlightbackground = styles['primaryFg'],
                             width = 20)
+        self.isTrackHistoryCheckButton = Checkbutton(self.pad,
+                            text = infoText['historyTrack'], 
+                            variable = self.isTrackHistory, 
+                            onvalue = True, 
+                            offvalue = False,
+                            bg = styles['secondaryFg'],
+                            fg = styles['primaryFg'],
+                            activebackground = styles['secondaryFg'],
+                            activeforeground = styles['primaryFg'],
+                            relief = RAISED, 
+                            width=30)
+
 
     def placeBasicVidgs(self):
         self.pad.place(x=0, y=0, relwidth=1, relheight=1)
@@ -92,6 +105,7 @@ class Application(Frame):
         self.langListBox.place(relx=0.6, rely=-1, relheight=0.35)
         self.scrollbar.config(command=self.langListBox.yview)
         self.scrollbar.place(relx=-1, rely=-1)
+        # self.isTrackHistoryCheckButton.place(relx=0.06, rely=0.88)
 
     def bindBasicEvents(self):
         self.root.bind_all('<KeyPress>', self._onKeyPress)
@@ -190,9 +204,14 @@ class Application(Frame):
             destLang = 'ru'
         srcLang = self.translator.detect(text)
         try:
-            return self.translator.translate(text, srcLang, destLang)
+            result = self.translator.translate(text, srcLang, destLang)
         except:
-            return 'SomeErrorOccuredIntoGoogleTranslate'
+            result = 'SomeErrorOccuredIntoGoogleTranslate'
+        # if self.isTrackHistory.get():
+        historyWriter = open('.\\translationHistory.txt', 'a')
+        historyWriter.write('{0}\t{1}\n'.format(text, result))
+        historyWriter.close()
+        return result
 
     def faq(self):
         faqTxt = CONFIG['infoUI']['faq']
