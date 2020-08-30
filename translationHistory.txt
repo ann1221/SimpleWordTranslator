@@ -2,3 +2,4 @@ ffdbg	ffdbg
 dingus	verdwyn
 dingus	disappeared
 dingus	исчезнувший
+hello	Привет

@@ -130,16 +130,11 @@ class Application(Frame):
             elif event.keycode==88 and not event.keysym == 'x':
                 event.widget.event_generate("<<Cut>>")
         
-    def fillLanguagesLB(self):
+    def fillLanguagesLB(self, topLangs = ['russian', 'english']):
+        for i in topLangs:
+            self.langListBox.insert(END, i)
         for i in self.translator.getAllLanguages():
-            if i == 'russian' or i == 'english':
-                self.langListBox.insert(0,i)
-            else: 
-                self.langListBox.insert(END,i)
-        # This only sets focus on the first item
-        self.langListBox.select_set(0)
-        # This select that item
-        self.langListBox.event_generate("<<ListboxSelect>>")
+            self.langListBox.insert(END,i)
         
     def _onBtnTranslateCover(self):
         self.btnTranslate.config(bg = CONFIG['styles']['secondaryFg'], fg = CONFIG['styles']['primaryFg'])
