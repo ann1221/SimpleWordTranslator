@@ -1,6 +1,6 @@
 *.lnk
 *.json
 __pycache__/
-config/dublicateConfig.*
+config/duplicateConfig.*
 *.pyw
 *History*.txt
