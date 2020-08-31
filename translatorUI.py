@@ -19,14 +19,23 @@ class Application(Frame):
         self.isExpandedMore = False
         self.isTrackHistory = BooleanVar()
 
+        self.configureRoot()
         self.createBasicVidgs()
         self.placeBasicVidgs()
         self.bindBasicEvents()
-        self.fillLanguagesLB()
+        self.fillLangListBox()
+        
+    def configureRoot(self):
+        config = CONFIG['root']
+        self.root.geometry("{0}+{1}".format(config['size'], config['position'])) 
+        self.root.title(config['title'])
+        self.root.resizable(config['resizable']['x'],config['resizable']['y'])
+        self.root.overrideredirect(config['overrideredirect'])
+        self.root.iconbitmap(CONFIG['paths']['icon'])
 
     def createBasicVidgs(self):
         styles = CONFIG['styles']
-        infoText = CONFIG['infoUI']['labels']
+        infoText = CONFIG['infoUI']
         
         self.pad = Canvas(root)
         self.bgImage = ImageTk.PhotoImage(Image.open(CONFIG['paths']['bgImg']))
@@ -52,13 +61,6 @@ class Application(Frame):
                             activebackground = styles['additionalBg'], 
                             relief = GROOVE,
                             command = lambda: self._onBtnTranslatePress())
-        self.btnHow = Button(self.middleFrame, 
-                            text = infoText['what'],
-                            bg = styles['secondaryBg'], 
-                            fg = styles['secondaryFg'],
-                            activebackground = styles['additionalBg'], 
-                            relief = GROOVE,
-                            command = self.faq)
         self.scrollbar = Scrollbar(self.pad, 
                             orient = VERTICAL)
         self.langLabel = Label(self.pad,
@@ -79,33 +81,18 @@ class Application(Frame):
                             font = styles['font'], 
                             highlightcolor = styles['primaryFg'],
                             relief = RIDGE,
-                            highlightbackground = styles['primaryFg'],
-                            width = 20)
-        self.isTrackHistoryCheckButton = Checkbutton(self.pad,
-                            text = infoText['historyTrack'], 
-                            variable = self.isTrackHistory, 
-                            onvalue = True, 
-                            offvalue = False,
-                            bg = styles['secondaryFg'],
-                            fg = styles['primaryFg'],
-                            activebackground = styles['secondaryFg'],
-                            activeforeground = styles['primaryFg'],
-                            relief = RAISED, 
-                            width=30)
-
+                            highlightbackground = styles['primaryFg'])
 
     def placeBasicVidgs(self):
         self.pad.place(x=0, y=0, relwidth=1, relheight=1)
         self.middleFrame.place(relx=0,rely=0.1,relwidth=1, relheight=0.4)
         self.entryInp.place(x=10, rely=0.1, relwidth=0.47, height=25)
         self.entryOutp.place(relx=0.5, rely=0.1, relwidth=0.48, height=25)
-        self.btnTranslate.place(relx=0.0, rely=0.6, relwidth=0.93, relheight=0.4)
-        self.btnHow.place(relx=0.931, rely=0.6, relwidth=0.07, relheight=0.4)
+        self.btnTranslate.place(relx=0.0, rely=0.6, relwidth=1, relheight=0.4)
         self.langLabel.place(relx=0.598, rely=0.9, relwidth=0.37, relheight=0.1)
         self.langListBox.place(relx=0.6, rely=-1, relheight=0.35)
         self.scrollbar.config(command=self.langListBox.yview)
         self.scrollbar.place(relx=-1, rely=-1)
-        # self.isTrackHistoryCheckButton.place(relx=0.06, rely=0.88)
 
     def bindBasicEvents(self):
         self.root.bind_all('<KeyPress>', self._onKeyPress)
@@ -114,9 +101,6 @@ class Application(Frame):
         self.root.bind_all('<Button-3>', lambda e: self.changeAppLocation())
         self.btnTranslate.bind('<Enter>', lambda e: self._onBtnTranslateCover())
         self.btnTranslate.bind('<Leave>', lambda e: self._onBtnTranslateUncover())
-        self.btnHow.bind("<Enter>", lambda e: self._onBtnHowCover())
-        self.btnHow.bind('<Leave>', lambda e: self._onBtnHowUncover())
-        self.btnHow.bind('<Return>', lambda e: self.FAQ())
         self.langLabel.bind('<Enter>', lambda e: self._onLangLabelCover())
         self.langLabel.bind('<Leave>', lambda e: self._onLangLabelUncover())
         self.langLabel.bind('<Button-1>', lambda e: self._onlangListBoxPress())
@@ -130,21 +114,10 @@ class Application(Frame):
             elif event.keycode==88 and not event.keysym == 'x':
                 event.widget.event_generate("<<Cut>>")
         
-    def fillLanguagesLB(self, topLangs = ['russian', 'english']):
-        for i in topLangs:
-            self.langListBox.insert(END, i)
-        for i in self.translator.getAllLanguages():
-            self.langListBox.insert(END,i)
-        
     def _onBtnTranslateCover(self):
         self.btnTranslate.config(bg = CONFIG['styles']['secondaryFg'], fg = CONFIG['styles']['primaryFg'])
     def _onBtnTranslateUncover(self):
         self.btnTranslate.config(bg = CONFIG['styles']['secondaryBg'], fg = CONFIG['styles']['secondaryFg'])
-
-    def _onBtnHowCover(self):
-        self.btnHow.config(bg = CONFIG['styles']['secondaryFg'], fg = CONFIG['styles']['primaryFg'])
-    def _onBtnHowUncover(self):
-        self.btnHow.config(bg = CONFIG['styles']['secondaryBg'], fg = CONFIG['styles']['secondaryFg'])
         
     def _onLangLabelCover(self):
         if not self.isExpandedMore:
@@ -158,17 +131,25 @@ class Application(Frame):
             self.langLabel.config(bg = CONFIG['styles']['secondaryBg'], fg = CONFIG['styles']['secondaryFg'])
 
     def _onBtnTranslatePress(self):
-        text = self.entryInp.get()
-        if len(text) == 0:
+        srcText = self.entryInp.get()
+        if len(srcText) == 0:
             return
         self.entryOutp.delete(0, END)
-        self.entryOutp.insert(0, self.doTranslate(text))
+        destText =  self.doTranslate(srcText)
+        self.entryOutp.insert(0, destText)
+        self.makeRecordToHistoryFile(srcText, destText)
 
     def _onlangListBoxPress(self):
         if not self.isExpandedMore:
             self.showLangListBox()
         else:
             self.hideLangListBox()
+    
+    def fillLangListBox(self, topLangs = ['russian', 'english']):
+        for i in topLangs:
+            self.langListBox.insert(END, i)
+        for i in self.translator.getAllLanguages():
+            self.langListBox.insert(END,i)
         
     def showLangListBox(self):
         self.langLabel.config(
@@ -186,9 +167,9 @@ class Application(Frame):
         self.langListBox.place(rely=-1)   
         self.isExpandedMore = not self.isExpandedMore
 
-    def delInpTxt(self, event):
+    def clearInputEntry(self, event):
         self.entryInp.delete(0, END)
-    def delOutpTxt(self, event):
+    def clearOutputEntry(self, event):
         self.entryOutp.delete(0, END)
 
     def doTranslate(self, text):
@@ -202,15 +183,12 @@ class Application(Frame):
             result = self.translator.translate(text, srcLang, destLang)
         except:
             result = 'SomeErrorOccuredIntoGoogleTranslate'
-        # if self.isTrackHistory.get():
-        historyWriter = open('.\\translationHistory.txt', 'a')
-        historyWriter.write('{0}\t{1}\n'.format(text, result))
-        historyWriter.close()
         return result
-
-    def faq(self):
-        faqTxt = CONFIG['infoUI']['faq']
-        messagebox.showinfo(faqTxt['title'], faqTxt['1'])
+        
+    def makeRecordToHistoryFile(self, srcText, destText):
+        historyWriter = open(CONFIG['paths']['historyFile'], "a")
+        historyWriter.write('{0}\t{1}\n'.format(srcText, destText))
+        historyWriter.close()
 
     def changeAppLocation(self):
         if self.isAppCanChangeLocation:
@@ -221,7 +199,7 @@ class Application(Frame):
         self.isAppCanChangeLocation = not self.isAppCanChangeLocation
 
     def writeCoordsToFile(self):
-        CONFIG['app']['position'] = "{0}+{1}".format(str(root.winfo_rootx()), str(root.winfo_rooty()))
+        CONFIG['root']['position'] = "{0}+{1}".format(str(root.winfo_rootx()), str(root.winfo_rooty()))
         with open('.\config\config.txt', 'w') as f:
             json.dump(CONFIG, f, sort_keys=True, indent=4, ensure_ascii=False)
 
@@ -240,11 +218,5 @@ if __name__ == '__main__':
         sys.exit()
 
     root = Tk()
-    root.geometry("{0}+{1}".format(CONFIG['app']['size'], CONFIG['app']['position'])) 
-    root.title(CONFIG['app']['title'])
-    root.resizable(0,0)
-    root.overrideredirect(CONFIG['app']['overrideredirect'])
-    root.iconbitmap(CONFIG['paths']['icon'])
-
     app = Application(root)
     root.mainloop()
