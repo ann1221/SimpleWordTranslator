@@ -181,8 +181,8 @@ class Application(Frame):
         srcLang = self.translator.detect(text)
         try:
             result = self.translator.translate(text, srcLang, destLang)
-        except:
-            result = 'SomeErrorOccuredIntoGoogleTranslate'
+        except Exception as e:
+            result = e
         return result
         
     def makeRecordToHistoryFile(self, srcText, destText):
