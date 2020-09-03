@@ -96,6 +96,8 @@ class Application(Frame):
 
     def bindBasicEvents(self):
         self.root.bind_all('<KeyPress>', self._onKeyPress)
+        self.entryInp.bind('<KeyPress>', lambda e: self._onEntryKeyPress(self.entryInp, e))
+        self.entryOutp.bind('<KeyPress>', lambda e: self._onEntryKeyPress(self.entryOutp, e))
         self.root.bind_all('<Return>', lambda e: self._onBtnTranslatePress())
         self.root.bind_all('<Escape>', lambda e: self.escape())
         self.root.bind_all('<Button-3>', lambda e: self.changeAppLocation())
@@ -112,7 +114,11 @@ class Application(Frame):
             elif event.keycode==86 and not event.keysym== 'v':
                 event.widget.event_generate("<<Paste>>")
             elif event.keycode==88 and not event.keysym == 'x':
-                event.widget.event_generate("<<Cut>>")
+                event.widget.event_generate("<<Cut>>")          
+    
+    def _onEntryKeyPress(self, entry, event):
+        if event.state==4 and event.keycode==8:
+            entry.delete(0, END)
         
     def _onBtnTranslateCover(self):
         self.btnTranslate.config(bg = CONFIG['styles']['secondaryFg'], fg = CONFIG['styles']['primaryFg'])
@@ -166,11 +172,6 @@ class Application(Frame):
         self.langLabel.place(rely=0.9)
         self.langListBox.place(rely=-1)   
         self.isExpandedMore = not self.isExpandedMore
-
-    def clearInputEntry(self, event):
-        self.entryInp.delete(0, END)
-    def clearOutputEntry(self, event):
-        self.entryOutp.delete(0, END)
 
     def doTranslate(self, text):
         try:
