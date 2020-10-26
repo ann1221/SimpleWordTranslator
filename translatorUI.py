@@ -7,6 +7,7 @@ from tkinter import simpledialog
 from tkinter import messagebox
 import json
 import os
+import sys
 
 CONFIG = {}
 
